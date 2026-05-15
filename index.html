@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>pH-Balance: Saliva Edition</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --acid-color: #ff6b6b;
+            --base-color: #4dabf7;
+            --neutral-color: #51cf66;
+            --text-main: #2c3e50;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* HUD - Interface de Cima */
+        #hud {
+            position: absolute;
+            top: 20px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .ph-display {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--text-main);
+            margin-bottom: 5px;
+        }
+
+        .ph-label {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #7f8c8d;
+        }
+
+        #ph-meter-container {
+            width: 100%;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            margin-top: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #ph-indicator {
+            height: 100%;
+            width: 50%; /* Começa no 7 */
+            background: var(--neutral-color);
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        /* Canvas */
+        canvas {
+            display: block;
+        }
+
+        /* Telas de Overlay */
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        h1 { color: var(--text-main); margin-bottom: 10px; }
+        p { color: #636e72; max-width: 400px; line-height: 1.5; }
+
+        button {
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            background-color: var(--text-main);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        button:hover { transform: scale(1.05); }
+
+        .hidden { display: none !important; }
+
+        #bio-info {
+            font-size: 0.85rem;
+            margin-top: 30px;
+            font-style: italic;
+            color: #b2bec3;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="hud">
+        <div class="ph-label">pH da Cavidade Oral</div>
+        <div id="ph-value" class="ph-display">7.0</div>
+        <div id="ph-meter-container">
+            <div id="ph-indicator"></div>
+        </div>
+        <div id="score" style="margin-top: 10px; font-weight: bold; color: #95a5a6;">Homeostase: 0s</div>
+    </div>
+
+    <!-- Tela Inicial -->
+    <div id="start-screen" class="overlay">
+        <h1>pH-Balance</h1>
+        <p>Arraste o círculo branco (Sistema Tampão) para coletar íons e manter o pH em 7.0.<br><br>
+        <span style="color:var(--acid-color)">Vermelho = Ácido (H+)</span><br>
+        <span style="color:var(--base-color)">Azul = Base (OH-)</span></p>
+        <button onclick="startGame()">Começar Aula Prática</button>
+    </div>
+
+    <!-- Tela de Game Over -->
+    <div id="game-over-screen" class="overlay hidden">
+        <h1 id="death-reason">Equilíbrio Rompido!</h1>
+        <p id="death-desc"></p>
+        <div id="bio-info">Na fonoaudiologia, o sistema tampão bicarbonato protege os tecidos orais e ajuda na manutenção da saúde laringofaríngea.</div>
+        <button onclick="resetGame()">Tentar Novamente</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+</div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const phValueDisplay = document.getElementById('ph-value');
+    const phIndicator = document.getElementById('ph-indicator');
+    const scoreDisplay = document.getElementById('score');
+    
+    let ph = 7.0;
+    let score = 0;
+    let particles = [];
+    let gameActive = false;
+    let spawnRate = 0.03;
+    let lastTime = 0;
+
+    const player = {
+        x: window.innerWidth / 2,
+        y: window.innerHeight / 2,
+        radius: 30,
+        color: '#ffffff'
+    };
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Input Handlers
+    const moveHandler = (e) => {
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        player.x = clientX;
+        player.y = clientY;
+    };
+
+    window.addEventListener('mousemove', moveHandler);
+    window.addEventListener('touchstart', moveHandler);
+    window.addEventListener('touchmove', moveHandler);
+
+    class Ion {
+        constructor() {
+            this.radius = Math.random() * 8 + 6;
+            this.x = Math.random() * (canvas.width - this.radius * 2) + this.radius;
+            this.y = -20;
+            this.type = Math.random() > 0.5 ? 'acid' : 'base';
+            this.color = this.type === 'acid' ? '#ff6b6b' : '#4dabf7';
+            this.speed = Math.random() * 2 + 2 + (score / 10);
+        }
+
+        update() {
+            this.y += this.speed;
+        }
+
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+            ctx.closePath();
+        }
+    }
+
+    let ions = [];
+
+    function startGame() {
+        document.getElementById('start-screen').classList.add('hidden');
+        gameActive = true;
+        animate();
+    }
+
+    function resetGame() {
+        ph = 7.0;
+        score = 0;
+        ions = [];
+        spawnRate = 0.03;
+        gameActive = true;
+        document.getElementById('game-over-screen').classList.add('hidden');
+    }
+
+    function gameOver() {
+        gameActive = false;
+        document.getElementById('game-over-screen').classList.remove('hidden');
+        
+        const desc = document.getElementById('death-desc');
+        if (ph <= 4.5) {
+            desc.innerText = "Acidose Oral: O pH abaixo de 4.5 causa desmineralização do esmalte dentário e pode irritar as pregas vocais em casos de refluxo.";
+        } else {
+            desc.innerText = "Alcalose Oral: Um pH muito alto favorece a precipitação de sais de cálcio e formação de cálculo salivar (tártaro).";
+        }
+    }
+
+    function updatePH(val) {
+        ph = Math.round((ph + val) * 10) / 10;
+        ph = Math.max(0, Math.min(14, ph));
+        
+        phValueDisplay.innerText = ph.toFixed(1);
+        
+        // Atualiza barra visual
+        const percentage = (ph / 14) * 100;
+        phIndicator.style.width = percentage + '%';
+
+        // Muda cor da barra
+        if (ph > 6.5 && ph < 7.5) phIndicator.style.backgroundColor = '#51cf66';
+        else if (ph <= 6.5) phIndicator.style.backgroundColor = '#ff6b6b';
+        else phIndicator.style.backgroundColor = '#4dabf7';
+
+        if (ph <= 4.5 || ph >= 9.5) gameOver();
+    }
+
+    function animate(time = 0) {
+        if (!gameActive) return;
+
+        const deltaTime = time - lastTime;
+        lastTime = time;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Sistema de spawn
+        if (Math.random() < spawnRate) {
+            ions.push(new Ion());
+        }
+        spawnRate += 0.00001; // Aumenta dificuldade
+
+        // Recuperação natural (Bio-feedback)
+        if (time % 1000 < 20) {
+            if (ph < 7.0) ph += 0.01;
+            if (ph > 7.0) ph -= 0.01;
+            score++;
+            scoreDisplay.innerText = `Homeostase: ${score}s`;
+        }
+
+        // Desenhar Jogador
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+        ctx.fillStyle = player.color;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = 'rgba(0,0,0,0.1)';
+        ctx.fill();
+        ctx.closePath();
+        ctx.shadowBlur = 0;
+
+        // Atualizar Íons
+        for (let i = ions.length - 1; i >= 0; i--) {
+            const ion = ions[i];
+            ion.update();
+            ion.draw();
+
+            // Colisão
+            const dx = player.x - ion.x;
+            const dy = player.y - ion.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < player.radius + ion.radius) {
+                updatePH(ion.type === 'acid' ? -0.5 : 0.5);
+                ions.splice(i, 1);
+                continue;
+            }
+
+            // Remover se sair da tela
+            if (ion.y > canvas.height + 20) {
+                ions.splice(i, 1);
+            }
+        }
+
+        requestAnimationFrame(animate);
+    }
+</script>
+</body>
+</html>
