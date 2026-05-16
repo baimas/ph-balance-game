@@ -1,325 +1,791 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>pH-Balance: Saliva Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bioquímica da Saliva: Equilíbrio de pH</title>
     <style>
-        :root {
-            --bg-color: #f8f9fa;
-            --acid-color: #ff6b6b;
-            --base-color: #4dabf7;
-            --neutral-color: #51cf66;
-            --text-main: #2c3e50;
-        }
-
-        body, html {
+        body {
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background-color: var(--bg-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            touch-action: none;
+            background-color: #f5f7fa;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
         }
 
-        #game-container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        /* HUD - Interface de Cima */
-        #hud {
-            position: absolute;
-            top: 20px;
-            width: 90%;
-            max-width: 500px;
-            text-align: center;
-            z-index: 10;
-            pointer-events: none;
-        }
-
-        .ph-display {
-            font-size: 3rem;
-            font-weight: bold;
-            color: var(--text-main);
-            margin-bottom: 5px;
-        }
-
-        .ph-label {
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #7f8c8d;
-        }
-
-        #ph-meter-container {
-            width: 100%;
-            height: 10px;
-            background: #e0e0e0;
-            border-radius: 5px;
-            margin-top: 15px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        #ph-indicator {
-            height: 100%;
-            width: 50%; /* Começa no 7 */
-            background: var(--neutral-color);
-            transition: width 0.3s ease, background-color 0.3s ease;
-        }
-
-        /* Canvas */
         canvas {
             display: block;
         }
 
-        /* Telas de Overlay */
-        .overlay {
+        #ui {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.9);
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            pointer-events: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            pointer-events: auto;
+        }
+
+        #ph-container {
+            text-align: center;
+        }
+
+        #ph-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        #ph-meter {
+            width: 320px;
+            height: 24px;
+            background: linear-gradient(to right, #ff4d4d, #ffeda6 50%, #4da6ff);
+            border-radius: 12px;
+            position: relative;
+            border: 3px solid white;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2), 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        #ph-pointer {
+            position: absolute;
+            top: -6px;
+            bottom: -6px;
+            width: 6px;
+            background: #2c3e50;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 3px;
+            transition: left 0.1s linear;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .ph-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #7f8c8d;
+            margin-top: 8px;
+            font-weight: 600;
+        }
+
+        /* Estilização do Painel de Ranking */
+        #right-hud {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        #score-container {
+            text-align: right;
+            width: 180px;
+        }
+
+        #score {
+            font-size: 32px;
+            font-weight: 800;
+            color: #2c3e50;
+        }
+
+        #score-label {
+            font-size: 11px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        #leaderboard {
+            width: 220px;
+            padding: 15px;
+            font-size: 12px;
+        }
+
+        #leaderboard h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #2c3e50;
+            border-bottom: 2px solid #e74c3c;
+            padding-bottom: 5px;
+        }
+
+        .leaderboard-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .leaderboard-item.active-player {
+            color: #e74c3c;
+            font-weight: 800;
+            background: rgba(231, 76, 60, 0.1);
+            border-radius: 4px;
+            padding: 3px 5px;
+        }
+
+        #game-over,
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(245, 247, 250, 0.96);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 20;
             text-align: center;
             padding: 20px;
             box-sizing: border-box;
+            z-index: 20;
+            backdrop-filter: blur(10px);
         }
 
-        h1 { color: var(--text-main); margin-bottom: 10px; }
-        p { color: #636e72; max-width: 400px; line-height: 1.5; }
+        #game-over {
+            display: none;
+            z-index: 30;
+        }
+
+        h1 {
+            font-size: 44px;
+            color: #2c3e50;
+            margin: 0 0 10px 0;
+            font-weight: 900;
+        }
+
+        h2 {
+            font-size: 20px;
+            color: #3498db;
+            margin: 0 0 25px 0;
+            font-weight: 600;
+        }
+
+        .edu-box {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.05);
+            max-width: 650px;
+            margin-bottom: 25px;
+            border-left: 6px solid #e74c3c;
+            text-align: left;
+        }
+
+        .edu-box p {
+            font-size: 15px;
+            color: #555;
+            line-height: 1.6;
+            margin: 0 0 12px 0;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .input-group input {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: 2px solid #bdc3c7;
+            border-radius: 25px;
+            text-align: center;
+            width: 200px;
+            outline: none;
+            font-weight: 600;
+        }
+
+        .input-group input:focus {
+            border-color: #e74c3c;
+        }
 
         button {
-            padding: 15px 40px;
-            font-size: 1.1rem;
-            background-color: var(--text-main);
+            background: #e74c3c;
             color: white;
             border: none;
+            padding: 16px 50px;
+            font-size: 18px;
+            font-weight: bold;
             border-radius: 30px;
             cursor: pointer;
-            margin-top: 20px;
-            transition: transform 0.2s;
+            transition: all 0.2s ease;
+            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.3);
         }
 
-        button:hover { transform: scale(1.05); }
+        button:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
 
-        .hidden { display: none !important; }
+        .reset-btn {
+            background: #95a5a6;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            transition: background 0.2s;
+            box-shadow: none;
+        }
 
-        #bio-info {
-            font-size: 0.85rem;
-            margin-top: 30px;
-            font-style: italic;
-            color: #b2bec3;
+        .reset-btn:hover {
+            background: #7f8c8d;
+            transform: none;
+        }
+
+        #alert-hub {
+            position: absolute;
+            top: 140px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .alert-banner {
+            color: white;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: 800;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #alert-carb {
+            background: #e74c3c;
+        }
+
+        #alert-xero {
+            background: #d35400;
+        }
+
+        #vignette {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+            transition: box-shadow 0.2s ease;
+            box-shadow: inset 0 0 0px rgba(0, 0, 0, 0);
         }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800;900&display=swap" rel="stylesheet">
 </head>
+
 <body>
 
-<div id="game-container">
-    <div id="hud">
-        <div class="ph-label">pH da Cavidade Oral</div>
-        <div id="ph-value" class="ph-display">7.0</div>
-        <div id="ph-meter-container">
-            <div id="ph-indicator"></div>
+    <div id="vignette"></div>
+
+    <div id="ui">
+        <div class="panel" id="ph-container">
+            <div id="ph-value">pH: 7.0</div>
+            <div id="ph-meter">
+                <div id="ph-pointer"></div>
+            </div>
+            <div class="ph-labels">
+                <span>4.5 (Erosão)</span><span>7.0 (Fisiológico)</span><span>9.5 (Cálculo)</span>
+            </div>
         </div>
-        <div id="score" style="margin-top: 10px; font-weight: bold; color: #95a5a6;">Homeostase: 0s</div>
+
+        <div id="right-hud">
+            <div class="panel" id="score-container">
+                <div id="score">0s</div>
+                <div id="score-label">Tempo de Homeostase</div>
+            </div>
+
+            <div class="panel" id="leaderboard">
+                <h3>🏆 Top 10 Melhor Tempo</h3>
+                <ol class="leaderboard-list" id="leaderboard-entries"></ol>
+                <button class="reset-btn" onclick="resetLeaderboard()">Zerar Ranking</button>
+            </div>
+        </div>
     </div>
 
-    <!-- Tela Inicial -->
-    <div id="start-screen" class="overlay">
-        <h1>pH-Balance</h1>
-        <p>Arraste o círculo branco (Sistema Tampão) para coletar íons e manter o pH em 7.0.<br><br>
-        <span style="color:var(--acid-color)">Vermelho = Ácido (H+)</span><br>
-        <span style="color:var(--base-color)">Azul = Base (OH-)</span></p>
-        <button onclick="startGame()">Começar Aula Prática</button>
+    <div id="alert-hub">
+        <div id="alert-carb" class="alert-banner">⚠️ ATAQUE ÁCIDO AGRESSIVO (Carboidratos)! ⚠️</div>
+        <div id="alert-xero" class="alert-banner">⚠️ XEROSTOMIA: Gravidade Aumentada! ⚠️</div>
     </div>
 
-    <!-- Tela de Game Over -->
-    <div id="game-over-screen" class="overlay hidden">
-        <h1 id="death-reason">Equilíbrio Rompido!</h1>
-        <p id="death-desc"></p>
-        <div id="bio-info">Na fonoaudiologia, o sistema tampão bicarbonato protege os tecidos orais e ajuda na manutenção da saúde laringofaríngea.</div>
-        <button onclick="resetGame()">Tentar Novamente</button>
+    <div id="start-screen">
+        <h1>pH-Balance: Ultra Fast</h1>
+        <h2>Velocidade Máxima de Aprendizado</h2>
+        <div class="edu-box" style="max-height: 55vh; overflow-y: auto; padding-right: 15px;">
+            <p><strong>Fundamentos de Bioquímica Oral:</strong></p>
+            <p style="font-size: 14px;">O pH salivar fisiológico é mantido próximo a <strong>7.0 (Neutro)</strong> através de sistemas tampão, sendo o principal o <strong>Bicarbonato (HCO₃⁻)</strong>. Variações extremas causam patologias:</p>
+            <ul style="font-size: 14px; color: #555; padding-left: 20px; margin-bottom: 15px;">
+                <li><strong style="color: #e74c3c;">pH ≤ 4.5 (Ácido):</strong> Causa desmineralização do esmalte (erosão/cárie), muitas vezes pelo ataque bacteriano após ingestão de carboidratos.</li>
+                <li><strong style="color: #3498db;">pH ≥ 9.5 (Básico):</strong> Favorece a precipitação de minerais, gerando o cálculo salivar (tártaro).</li>
+            </ul>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+            <p><strong>Seu Objetivo (NÃO FIQUE PARADO!):</strong></p>
+            <ul style="font-size: 14px; color: #555; padding-left: 20px; margin-bottom: 0;">
+                <li>O pH ambiente sofre desestabilização contínua. Você controla a esfera central.</li>
+                <li>Pegue gotas <span style="color:#3498db; font-weight:bold;">Azuis (OH⁻)</span> para alcalinizar e <span style="color:#e74c3c; font-weight:bold;">Vermelhas (H⁺)</span> para acidificar.</li>
+                <li>Gotas <span style="color:#2ecc71; font-weight:bold;">Verdes (HCO₃⁻)</span> são o seu tampão máximo e travam o pH em 7.0 temporariamente!</li>
+            </ul>
+        </div>
+
+        <div class="input-group">
+            <label for="player-name">Insira seu Nome / Iniciais:</label>
+            <input type="text" id="player-name" maxlength="10" placeholder="Ex: VINI" value="FONO">
+        </div>
+
+        <button onclick="hideStartScreenAndPlay()">Iniciar Simulação Veloz</button>
+        <div style="margin-top: 25px; font-size: 14px; color: #7f8c8d; font-weight: 600; letter-spacing: 0.5px;">By: Vinícius Baimas</div>
+    </div>
+
+    <div id="game-over">
+        <h1 id="go-title">Game Over</h1>
+        <h2 id="go-reason">-</h2>
+        <div class="edu-box">
+            <p><strong>Importância na Bioquímica:</strong></p>
+            <p>A velocidade das alterações químicas ilustra a importância dos sistemas tampão (como o bicarbonato) na manutenção da homeostase. O desequilíbrio do pH afeta a solubilidade dos minerais e a atividade das enzimas salivares.</p>
+        </div>
+        <button onclick="showStartScreen()">Reiniciar Desafio</button>
     </div>
 
     <canvas id="gameCanvas"></canvas>
-</div>
 
-<script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const phValueDisplay = document.getElementById('ph-value');
-    const phIndicator = document.getElementById('ph-indicator');
-    const scoreDisplay = document.getElementById('score');
-    
-    let ph = 7.0;
-    let score = 0;
-    let particles = [];
-    let gameActive = false;
-    let spawnRate = 0.03;
-    let lastTime = 0;
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const phValueEl = document.getElementById('ph-value');
+        const phPointerEl = document.getElementById('ph-pointer');
+        const scoreEl = document.getElementById('score');
+        const gameOverScreen = document.getElementById('game-over');
+        const goTitle = document.getElementById('go-title');
+        const goReason = document.getElementById('go-reason');
+        const alertCarb = document.getElementById('alert-carb');
+        const alertXero = document.getElementById('alert-xero');
+        const startScreen = document.getElementById('start-screen');
+        const vignette = document.getElementById('vignette');
+        const leaderboardEntriesEl = document.getElementById('leaderboard-entries');
+        const playerNameInput = document.getElementById('player-name');
 
-    const player = {
-        x: window.innerWidth / 2,
-        y: window.innerHeight / 2,
-        radius: 30,
-        color: '#ffffff'
-    };
+        let width, height;
+        let ph = 7.0;
+        let score = 0;
+        let isGameOver = false;
+        let lastTime = 0;
+        let currentPlayerName = "FONO";
 
-    function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
+        let bufferLocked = 0;
+        let carbRush = 0;
+        let xerostomiaMode = 0;
 
-    window.addEventListener('resize', resize);
-    resize();
+        let player;
+        let drops = [];
+        let particles = [];
 
-    // Input Handlers
-    const moveHandler = (e) => {
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        player.x = clientX;
-        player.y = clientY;
-    };
+        let dropSpawnTimer = 0;
+        let eventTimer = 0;
+        let decayTimer = 0;
 
-    window.addEventListener('mousemove', moveHandler);
-    window.addEventListener('touchstart', moveHandler);
-    window.addEventListener('touchmove', moveHandler);
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
 
-    class Ion {
-        constructor() {
-            this.radius = Math.random() * 8 + 6;
-            this.x = Math.random() * (canvas.width - this.radius * 2) + this.radius;
-            this.y = -20;
-            this.type = Math.random() > 0.5 ? 'acid' : 'base';
-            this.color = this.type === 'acid' ? '#ff6b6b' : '#4dabf7';
-            this.speed = Math.random() * 2 + 2 + (score / 10);
+        window.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
+        window.addEventListener('touchmove', (e) => {
+            mouseX = e.touches[0].clientX;
+            mouseY = e.touches[0].clientY;
+        }, { passive: true });
+
+        function resize() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
         }
+        window.addEventListener('resize', resize);
 
-        update() {
-            this.y += this.speed;
-        }
+        // Banco de dados Local de Ranking
+        let highScores = JSON.parse(localStorage.getItem('ph_scores')) || [
+            { name: "Prof_Bioq", score: 45 },
+            { name: "Mestre_Músc", score: 35 },
+            { name: "Disfagia_X", score: 25 },
+            { name: "Saliva_Top", score: 18 },
+            { name: "Voz_Saud", score: 12 }
+        ];
 
-        draw() {
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-            ctx.fillStyle = this.color;
-            ctx.fill();
-            ctx.closePath();
-        }
-    }
+        function renderLeaderboard(currentLiveScore = 0, isLive = true) {
+            let listToDisplay = [...highScores];
 
-    let ions = [];
-
-    function startGame() {
-        document.getElementById('start-screen').classList.add('hidden');
-        gameActive = true;
-        animate();
-    }
-
-    function resetGame() {
-        ph = 7.0;
-        score = 0;
-        ions = [];
-        spawnRate = 0.03;
-        gameActive = true;
-        document.getElementById('game-over-screen').classList.add('hidden');
-    }
-
-    function gameOver() {
-        gameActive = false;
-        document.getElementById('game-over-screen').classList.remove('hidden');
-        
-        const desc = document.getElementById('death-desc');
-        if (ph <= 4.5) {
-            desc.innerText = "Acidose Oral: O pH abaixo de 4.5 causa desmineralização do esmalte dentário e pode irritar as pregas vocais em casos de refluxo.";
-        } else {
-            desc.innerText = "Alcalose Oral: Um pH muito alto favorece a precipitação de sais de cálcio e formação de cálculo salivar (tártaro).";
-        }
-    }
-
-    function updatePH(val) {
-        ph = Math.round((ph + val) * 10) / 10;
-        ph = Math.max(0, Math.min(14, ph));
-        
-        phValueDisplay.innerText = ph.toFixed(1);
-        
-        // Atualiza barra visual
-        const percentage = (ph / 14) * 100;
-        phIndicator.style.width = percentage + '%';
-
-        // Muda cor da barra
-        if (ph > 6.5 && ph < 7.5) phIndicator.style.backgroundColor = '#51cf66';
-        else if (ph <= 6.5) phIndicator.style.backgroundColor = '#ff6b6b';
-        else phIndicator.style.backgroundColor = '#4dabf7';
-
-        if (ph <= 4.5 || ph >= 9.5) gameOver();
-    }
-
-    function animate(time = 0) {
-        if (!gameActive) return;
-
-        const deltaTime = time - lastTime;
-        lastTime = time;
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Sistema de spawn
-        if (Math.random() < spawnRate) {
-            ions.push(new Ion());
-        }
-        spawnRate += 0.00001; // Aumenta dificuldade
-
-        // Recuperação natural (Bio-feedback)
-        if (time % 1000 < 20) {
-            if (ph < 7.0) ph += 0.01;
-            if (ph > 7.0) ph -= 0.01;
-            score++;
-            scoreDisplay.innerText = `Homeostase: ${score}s`;
-        }
-
-        // Desenhar Jogador
-        ctx.beginPath();
-        ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-        ctx.fillStyle = player.color;
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = 'rgba(0,0,0,0.1)';
-        ctx.fill();
-        ctx.closePath();
-        ctx.shadowBlur = 0;
-
-        // Atualizar Íons
-        for (let i = ions.length - 1; i >= 0; i--) {
-            const ion = ions[i];
-            ion.update();
-            ion.draw();
-
-            // Colisão
-            const dx = player.x - ion.x;
-            const dy = player.y - ion.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance < player.radius + ion.radius) {
-                updatePH(ion.type === 'acid' ? -0.5 : 0.5);
-                ions.splice(i, 1);
-                continue;
+            if (isLive) {
+                // Remove registro fantasma temporário pré-existente do jogador atual
+                listToDisplay = listToDisplay.filter(item => item.isCurrentSession !== true);
+                // Insere a pontuação em tempo real do jogador
+                listToDisplay.push({ name: currentPlayerName, score: currentLiveScore, isCurrentSession: true });
             }
 
-            // Remover se sair da tela
-            if (ion.y > canvas.height + 20) {
-                ions.splice(i, 1);
+            // Ordena decrescente por pontuação
+            listToDisplay.sort((a, b) => b.score - a.score);
+            // Pega apenas os 10 melhores
+            listToDisplay = listToDisplay.slice(0, 10);
+
+            leaderboardEntriesEl.innerHTML = listToDisplay.map((entry, index) => `
+                <li class="leaderboard-item ${entry.isCurrentSession ? 'active-player' : ''}">
+                    <span>${index + 1}. ${entry.name}</span>
+                    <span>${entry.score}s</span>
+                </li>
+            `).join('');
+        }
+
+        function saveFinalScore(finalScoreSeconds) {
+            // Remove instâncias temporárias de sessão ativa
+            highScores = highScores.filter(item => item.isCurrentSession !== true);
+            // Adiciona pontuação final legítima
+            highScores.push({ name: currentPlayerName, score: finalScoreSeconds });
+            highScores.sort((a, b) => b.score - a.score);
+            highScores = highScores.slice(0, 10); // Mantém top 10
+            localStorage.setItem('ph_scores', JSON.stringify(highScores));
+        }
+
+        function resetLeaderboard() {
+            if (confirm("Tem certeza que deseja apagar todos os recordes?")) {
+                highScores = [];
+                localStorage.setItem('ph_scores', JSON.stringify(highScores));
+                renderLeaderboard(0, false);
             }
         }
 
-        requestAnimationFrame(animate);
-    }
-</script>
+        class Player {
+            constructor() {
+                this.x = width / 2;
+                this.y = height / 2;
+                this.baseRadius = 35;
+                this.radius = this.baseRadius;
+            }
+
+            update() {
+                this.x = mouseX;
+                this.y = mouseY;
+                this.x = Math.max(this.radius, Math.min(width - this.radius, this.x));
+                this.y = Math.max(this.radius, Math.min(height - this.radius, this.y));
+
+                let targetRadius = xerostomiaMode > 0 ? this.baseRadius * 0.5 : this.baseRadius;
+                this.radius += (targetRadius - this.radius) * 0.1;
+            }
+
+            draw(ctx) {
+                let r = 240, g = 240, b = 240;
+                if (bufferLocked > 0) {
+                    r = 46; g = 204; b = 113;
+                } else if (ph < 7.0) {
+                    let intensity = Math.min(1, (7.0 - ph) / 2.5);
+                    g = 240 - (intensity * 180); b = 240 - (intensity * 180);
+                } else if (ph > 7.0) {
+                    let intensity = Math.min(1, (ph - 7.0) / 2.5);
+                    r = 240 - (intensity * 180); g = 240 - (intensity * 80);
+                }
+
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                ctx.shadowColor = `rgb(${r}, ${g}, ${b})`;
+                ctx.shadowBlur = xerostomiaMode > 0 ? 5 : 20;
+                ctx.fill();
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = '#2c3e50';
+                ctx.stroke();
+
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#2c3e50';
+                ctx.font = 'bold 10px Inter';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(bufferLocked > 0 ? "ESTÁVEL" : "TAMPÃO", this.x, this.y);
+                ctx.restore();
+            }
+        }
+
+        class Drop {
+            constructor(type) {
+                this.type = type;
+                this.x = Math.random() * (width - 60) + 30;
+                this.y = -40;
+                this.vy = (Math.random() * 3 + 5);
+                this.radius = type === 'buffer' ? 22 : 18;
+
+                if (this.type === 'acid') { this.color = '#e74c3c'; this.label = 'H⁺'; }
+                else if (this.type === 'base') { this.color = '#3498db'; this.label = 'OH⁻'; }
+                else { this.color = '#2ecc71'; this.label = 'HCO₃⁻'; this.vy += 2; }
+            }
+
+            update(dt, speedMultiplier) {
+                this.y += this.vy * speedMultiplier;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.translate(this.x, this.y);
+                ctx.moveTo(0, -this.radius * 1.5);
+                ctx.bezierCurveTo(this.radius, -this.radius * 0.5, this.radius, this.radius, 0, this.radius);
+                ctx.bezierCurveTo(-this.radius, this.radius, -this.radius, -this.radius * 0.5, 0, -this.radius * 1.5);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#ffffff';
+                ctx.stroke();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = `bold ${this.type === 'buffer' ? 10 : 13}px Inter`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.label, 0, this.radius * 0.15);
+                ctx.restore();
+            }
+        }
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x; this.y = y;
+                this.vx = (Math.random() - 0.5) * 8;
+                this.vy = (Math.random() - 0.5) * 8;
+                this.life = 1.0; this.color = color;
+            }
+            update() { this.x += this.vx; this.y += this.vy; this.life -= 0.05; }
+            draw(ctx) {
+                ctx.save(); ctx.globalAlpha = Math.max(0, this.life);
+                ctx.fillStyle = this.color; ctx.beginPath();
+                ctx.arc(this.x, this.y, Math.random() * 3 + 2, 0, Math.PI * 2);
+                ctx.fill(); ctx.restore();
+            }
+        }
+
+        function spawnDrop() {
+            let rand = Math.random();
+            let type = 'acid';
+            if (carbRush > 0) {
+                type = rand > 0.10 ? 'acid' : (rand > 0.02 ? 'base' : 'buffer');
+            } else {
+                type = rand < 0.48 ? 'acid' : (rand < 0.95 ? 'base' : 'buffer');
+            }
+            drops.push(new Drop(type));
+        }
+
+        function checkCollisions() {
+            for (let i = drops.length - 1; i >= 0; i--) {
+                let d = drops[i];
+                let dist = Math.hypot(player.x - d.x, player.y - d.y);
+
+                if (dist < player.radius + d.radius - 2) {
+                    if (d.type === 'acid') {
+                        if (bufferLocked <= 0) ph -= 0.5;
+                        for (let p = 0; p < 6; p++) particles.push(new Particle(d.x, d.y, '#e74c3c'));
+                    } else if (d.type === 'base') {
+                        if (bufferLocked <= 0) ph += 0.5;
+                        for (let p = 0; p < 6; p++) particles.push(new Particle(d.x, d.y, '#3498db'));
+                    } else if (d.type === 'buffer') {
+                        bufferLocked = 3000; ph = 7.0;
+                        for (let p = 0; p < 10; p++) particles.push(new Particle(d.x, d.y, '#2ecc71'));
+                    }
+                    drops.splice(i, 1);
+                    updateUI();
+                    checkGameOver();
+                } else if (d.y > height + 50) {
+                    drops.splice(i, 1);
+                }
+            }
+        }
+
+        function updateVignette() {
+            if (ph <= 5.5) {
+                let intensity = (5.5 - ph) / 1.0;
+                vignette.style.boxShadow = `inset 0 0 ${40 * intensity}px rgba(231, 76, 60, ${0.7 * intensity})`;
+            } else if (ph >= 8.5) {
+                let intensity = (ph - 8.5) / 1.0;
+                vignette.style.boxShadow = `inset 0 0 ${40 * intensity}px rgba(34, 152, 219, ${0.7 * intensity})`;
+            } else {
+                vignette.style.boxShadow = "inset 0 0 0px rgba(0,0,0,0)";
+            }
+        }
+
+        function checkGameOver() {
+            if (ph <= 4.5 || ph >= 9.5) {
+                isGameOver = true;
+                let finalSeconds = Math.floor(score / 1000);
+                saveFinalScore(finalSeconds);
+                renderLeaderboard(finalSeconds, false); // Trava ranking sem sessão provisória
+
+                gameOverScreen.style.display = 'flex';
+                if (ph <= 4.5) {
+                    goTitle.style.color = '#e74c3c'; goTitle.innerText = "Erosão Ácida Crítica!";
+                    goReason.innerText = `O pH despencou para ${ph.toFixed(1)}. Desmineralização massiva dos dentes ocorrendo.`;
+                } else {
+                    goTitle.style.color = '#3498db'; goTitle.innerText = "Alcalose e Cálculo!";
+                    goReason.innerText = `O pH explodiu para ${ph.toFixed(1)}. Cristalização mineral e tártaro severo gerados.`;
+                }
+            }
+        }
+
+        function updateUI() {
+            ph = Math.max(4.0, Math.min(10.0, ph));
+            phValueEl.innerText = `pH Salivar: ${ph.toFixed(1)}`;
+            let percent = ((ph - 4.5) / (9.5 - 4.5)) * 100;
+            phPointerEl.style.left = `${Math.max(0, Math.min(100, percent))}%`;
+
+            let seconds = Math.floor(score / 1000);
+            scoreEl.innerText = `${seconds}s`;
+            renderLeaderboard(seconds, true); // Faz a escalada em tempo real no HUD!
+            updateVignette();
+        }
+
+        function hideStartScreenAndPlay() {
+            let nameInput = playerNameInput.value.trim().toUpperCase();
+            currentPlayerName = nameInput !== "" ? nameInput : "FONO";
+            startScreen.style.display = 'none';
+            startGame();
+        }
+
+        function showStartScreen() {
+            gameOverScreen.style.display = 'none';
+            startScreen.style.display = 'flex';
+            
+            // Reseta para o background do menu
+            resize();
+            ph = 7.0;
+            score = 0;
+            isGameOver = false;
+            bufferLocked = 0; carbRush = 0; xerostomiaMode = 0;
+            drops = []; particles = []; eventTimer = 0; decayTimer = 0;
+            player = new Player();
+            
+            updateUI();
+            ctx.clearRect(0, 0, width, height);
+            player.draw(ctx);
+        }
+
+        function startGame() {
+            resize(); ph = 7.0; score = 0; isGameOver = false;
+            bufferLocked = 0; carbRush = 0; xerostomiaMode = 0;
+            drops = []; particles = []; eventTimer = 0; decayTimer = 0;
+            player = new Player();
+            gameOverScreen.style.display = 'none';
+            alertCarb.style.opacity = '0'; alertXero.style.opacity = '0';
+            updateUI();
+            lastTime = performance.now();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function gameLoop(timestamp) {
+            if (isGameOver) return;
+            let dt = timestamp - lastTime;
+            if (dt > 100) dt = 16;
+            lastTime = timestamp;
+            score += dt;
+
+            if (bufferLocked > 0) bufferLocked -= dt;
+            if (carbRush > 0) carbRush -= dt;
+            if (xerostomiaMode > 0) xerostomiaMode -= dt;
+
+            eventTimer += dt;
+            if (eventTimer > 12000) {
+                eventTimer = 0;
+                if (Math.random() > 0.5) {
+                    carbRush = 5000; alertCarb.style.opacity = '1';
+                    setTimeout(() => alertCarb.style.opacity = '0', 2500);
+                } else {
+                    xerostomiaMode = 5000; alertXero.style.opacity = '1';
+                    setTimeout(() => alertXero.style.opacity = '0', 2500);
+                }
+            }
+
+            decayTimer += dt;
+            if (decayTimer > 800 && bufferLocked <= 0) {
+                decayTimer = 0;
+                ph += Math.random() > 0.5 ? 0.1 : -0.1;
+                updateUI();
+                checkGameOver();
+            }
+
+            dropSpawnTimer += dt;
+            let currentSpawnRate = carbRush > 0 ? 80 : 350;
+            currentSpawnRate -= (score / 100);
+
+            if (dropSpawnTimer > Math.max(60, currentSpawnRate)) {
+                dropSpawnTimer = 0; spawnDrop();
+            }
+
+            let speedMultiplier = 1.0 + (score / 12000);
+
+            player.update();
+            for (let d of drops) d.update(dt, speedMultiplier);
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                if (particles[i].life <= 0) particles.splice(i, 1);
+            }
+
+            checkCollisions();
+            if (!isGameOver) updateUI();
+
+            ctx.clearRect(0, 0, width, height);
+
+            ctx.strokeStyle = 'rgba(44, 62, 80, 0.04)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < width; i += 50) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, height); ctx.stroke(); }
+            for (let i = 0; i < height; i += 50) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(width, i); ctx.stroke(); }
+
+            for (let d of drops) d.draw(ctx);
+            for (let p of particles) p.draw(ctx);
+            player.draw(ctx);
+
+            requestAnimationFrame(gameLoop);
+        }
+        // Initialize
+        resize();
+        player = new Player();
+        updateUI();
+        ctx.clearRect(0, 0, width, height);
+        player.draw(ctx);
+    </script>
 </body>
+
 </html>
