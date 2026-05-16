@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bioquímica da Saliva: Equilíbrio de pH</title>
+    <title>Bioquímica do Sangue: Homeostase e pH</title>
     <style>
         body {
             margin: 0;
@@ -465,12 +465,12 @@
 
     <div id="ui">
         <div class="panel" id="ph-container">
-            <div id="ph-value">pH: 7.0</div>
+            <div id="ph-value">pH: 7.4</div>
             <div id="ph-meter">
                 <div id="ph-pointer"></div>
             </div>
             <div class="ph-labels">
-                <span>4.5 (Erosão)</span><span>7.0 (Fisiológico)</span><span>9.5 (Cálculo)</span>
+                <span>6.8 (Acidose)</span><span>7.4 (Fisiológico)</span><span>8.0 (Alcalose)</span>
             </div>
         </div>
 
@@ -489,8 +489,8 @@
     </div>
 
     <div id="alert-hub">
-        <div id="alert-carb" class="alert-banner">⚠️ ATAQUE ÁCIDO AGRESSIVO (Carboidratos)! ⚠️</div>
-        <div id="alert-xero" class="alert-banner">⚠️ XEROSTOMIA: Gravidade Aumentada! ⚠️</div>
+        <div id="alert-exercise" class="alert-banner" style="background: #e74c3c;">⚠️ EXERCÍCIO INTENSO: Produção de Ácido Lático! ⚠️</div>
+        <div id="alert-breath" class="alert-banner" style="background: #3498db;">⚠️ RESPIRAÇÃO RÁPIDA: Perda de CO₂! ⚠️</div>
     </div>
 
     <div id="first-place-trophy">
@@ -499,21 +499,21 @@
     </div>
 
     <div id="start-screen">
-        <h1>pH-Balance: Ultra Fast</h1>
-        <h2>Velocidade Máxima de Aprendizado</h2>
+        <h1>pH-Balance: Sangue</h1>
+        <h2>Homeostase em Tempo Real</h2>
         <div class="edu-box" style="max-height: 55vh; overflow-y: auto; padding-right: 15px;">
-            <p><strong>Fundamentos de Bioquímica Oral:</strong></p>
-            <p style="font-size: 14px;">O pH salivar fisiológico é mantido próximo a <strong>7.0 (Neutro)</strong> através de sistemas tampão, sendo o principal o <strong>Bicarbonato (HCO₃⁻)</strong>. Variações extremas causam patologias:</p>
+            <p><strong>Fundamentos da Homeostase Sanguínea:</strong></p>
+            <p style="font-size: 14px;">O pH sanguíneo precisa ficar muito próximo a <strong>7.4</strong> através de sistemas tampão, sendo o principal o <strong>Bicarbonato (HCO₃⁻)</strong>. O corpo luta o tempo todo para manter esse equilíbrio:</p>
             <ul style="font-size: 14px; color: #555; padding-left: 20px; margin-bottom: 15px;">
-                <li><strong style="color: #e74c3c;">pH ≤ 4.5 (Ácido):</strong> Causa desmineralização do esmalte (erosão/cárie), muitas vezes pelo ataque bacteriano após ingestão de carboidratos.</li>
-                <li><strong style="color: #3498db;">pH ≥ 9.5 (Básico):</strong> Favorece a precipitação de minerais, gerando o cálculo salivar (tártaro).</li>
+                <li><strong style="color: #e74c3c;">Muito Ácido (Acidose):</strong> Excesso de H⁺, que pode ocorrer durante exercício intenso ou má alimentação.</li>
+                <li><strong style="color: #3498db;">Muito Básico (Alcalose):</strong> Excesso de base ou perda de ácido, como na respiração acelerada.</li>
             </ul>
             <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
             <p><strong>Seu Objetivo (NÃO FIQUE PARADO!):</strong></p>
             <ul style="font-size: 14px; color: #555; padding-left: 20px; margin-bottom: 0;">
-                <li>O pH ambiente sofre desestabilização contínua. Você controla a esfera central.</li>
+                <li>O corpo tenta manter a estabilidade (Homeostase) o tempo todo. Você controla o tampão.</li>
                 <li>Pegue gotas <span style="color:#3498db; font-weight:bold;">Azuis (OH⁻)</span> para alcalinizar e <span style="color:#e74c3c; font-weight:bold;">Vermelhas (H⁺)</span> para acidificar.</li>
-                <li>Gotas <span style="color:#2ecc71; font-weight:bold;">Verdes (HCO₃⁻)</span> são o seu tampão máximo e travam o pH em 7.0 temporariamente!</li>
+                <li>O escudo <span style="color:#2ecc71; font-weight:bold;">Verde (HCO₃⁻)</span> (Bicarbonato) neutraliza excessos e trava o pH em 7.4 temporariamente!</li>
             </ul>
         </div>
 
@@ -531,7 +531,7 @@
         <h2 id="go-reason">-</h2>
         <div class="edu-box">
             <p><strong>Importância na Bioquímica:</strong></p>
-            <p>A velocidade das alterações químicas ilustra a importância dos sistemas tampão (como o bicarbonato) na manutenção da homeostase. O desequilíbrio do pH afeta a solubilidade dos minerais e a atividade das enzimas salivares.</p>
+            <p>A velocidade das alterações químicas ilustra a importância dos sistemas tampão na manutenção da <strong>Homeostase</strong>. O desequilíbrio severo do sangue afeta a atividade de todas as enzimas vitais do corpo humano.</p>
         </div>
         <button onclick="showStartScreen()">Reiniciar Desafio</button>
     </div>
@@ -547,8 +547,8 @@
         const gameOverScreen = document.getElementById('game-over');
         const goTitle = document.getElementById('go-title');
         const goReason = document.getElementById('go-reason');
-        const alertCarb = document.getElementById('alert-carb');
-        const alertXero = document.getElementById('alert-xero');
+        const alertExercise = document.getElementById('alert-exercise');
+        const alertBreath = document.getElementById('alert-breath');
         const startScreen = document.getElementById('start-screen');
         const vignette = document.getElementById('vignette');
         const leaderboardEntriesEl = document.getElementById('leaderboard-entries');
@@ -556,7 +556,7 @@
         const trophyEl = document.getElementById('first-place-trophy');
 
         let width, height;
-        let ph = 7.0;
+        let ph = 7.4;
         let score = 0;
         let isGameOver = false;
         let lastTime = 0;
@@ -564,8 +564,8 @@
         let hasReachedFirstPlaceThisGame = false;
 
         let bufferLocked = 0;
-        let carbRush = 0;
-        let xerostomiaMode = 0;
+        let exerciseRush = 0;
+        let breathMode = 0;
 
         let player;
         let drops = [];
@@ -695,7 +695,7 @@
                 this.x = Math.max(this.radius, Math.min(width - this.radius, this.x));
                 this.y = Math.max(this.radius, Math.min(height - this.radius, this.y));
 
-                let targetRadius = xerostomiaMode > 0 ? this.baseRadius * 0.5 : this.baseRadius;
+                let targetRadius = breathMode > 0 ? this.baseRadius * 0.5 : this.baseRadius;
                 this.radius += (targetRadius - this.radius) * 0.1;
             }
 
@@ -703,11 +703,11 @@
                 let r = 240, g = 240, b = 240;
                 if (bufferLocked > 0) {
                     r = 46; g = 204; b = 113;
-                } else if (ph < 7.0) {
-                    let intensity = Math.min(1, (7.0 - ph) / 2.5);
+                } else if (ph < 7.4) {
+                    let intensity = Math.min(1, (7.4 - ph) / 0.6);
                     g = 240 - (intensity * 180); b = 240 - (intensity * 180);
-                } else if (ph > 7.0) {
-                    let intensity = Math.min(1, (ph - 7.0) / 2.5);
+                } else if (ph > 7.4) {
+                    let intensity = Math.min(1, (ph - 7.4) / 0.6);
                     r = 240 - (intensity * 180); g = 240 - (intensity * 80);
                 }
 
@@ -716,7 +716,7 @@
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                 ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
                 ctx.shadowColor = `rgb(${r}, ${g}, ${b})`;
-                ctx.shadowBlur = xerostomiaMode > 0 ? 5 : 20;
+                ctx.shadowBlur = breathMode > 0 ? 5 : 20;
                 ctx.fill();
                 ctx.lineWidth = 3;
                 ctx.strokeStyle = '#2c3e50';
@@ -790,7 +790,7 @@
         function spawnDrop() {
             let rand = Math.random();
             let type = 'acid';
-            if (carbRush > 0) {
+            if (exerciseRush > 0) {
                 type = rand > 0.10 ? 'acid' : (rand > 0.02 ? 'base' : 'buffer');
             } else {
                 type = rand < 0.48 ? 'acid' : (rand < 0.95 ? 'base' : 'buffer');
@@ -805,13 +805,13 @@
 
                 if (dist < player.radius + d.radius - 2) {
                     if (d.type === 'acid') {
-                        if (bufferLocked <= 0) ph -= 0.5;
+                        if (bufferLocked <= 0) ph -= 0.1;
                         for (let p = 0; p < 6; p++) particles.push(new Particle(d.x, d.y, '#e74c3c'));
                     } else if (d.type === 'base') {
-                        if (bufferLocked <= 0) ph += 0.5;
+                        if (bufferLocked <= 0) ph += 0.1;
                         for (let p = 0; p < 6; p++) particles.push(new Particle(d.x, d.y, '#3498db'));
                     } else if (d.type === 'buffer') {
-                        bufferLocked = 3000; ph = 7.0;
+                        bufferLocked = 3000; ph = 7.4;
                         for (let p = 0; p < 10; p++) particles.push(new Particle(d.x, d.y, '#2ecc71'));
                     }
                     drops.splice(i, 1);
@@ -824,11 +824,11 @@
         }
 
         function updateVignette() {
-            if (ph <= 5.5) {
-                let intensity = (5.5 - ph) / 1.0;
+            if (ph <= 7.1) {
+                let intensity = (7.1 - ph) / 0.3;
                 vignette.style.boxShadow = `inset 0 0 ${40 * intensity}px rgba(231, 76, 60, ${0.7 * intensity})`;
-            } else if (ph >= 8.5) {
-                let intensity = (ph - 8.5) / 1.0;
+            } else if (ph >= 7.7) {
+                let intensity = (ph - 7.7) / 0.3;
                 vignette.style.boxShadow = `inset 0 0 ${40 * intensity}px rgba(34, 152, 219, ${0.7 * intensity})`;
             } else {
                 vignette.style.boxShadow = "inset 0 0 0px rgba(0,0,0,0)";
@@ -836,27 +836,27 @@
         }
 
         function checkGameOver() {
-            if (ph <= 4.5 || ph >= 9.5) {
+            if (ph <= 6.8 || ph >= 8.0) {
                 isGameOver = true;
                 let finalSeconds = Math.floor(score / 1000);
                 saveFinalScore(finalSeconds);
                 renderLeaderboard(finalSeconds, false); // Trava ranking sem sessão provisória
 
                 gameOverScreen.style.display = 'flex';
-                if (ph <= 4.5) {
-                    goTitle.style.color = '#e74c3c'; goTitle.innerText = "Erosão Ácida Crítica!";
-                    goReason.innerText = `O pH despencou para ${ph.toFixed(1)}. Desmineralização massiva dos dentes ocorrendo.`;
+                if (ph <= 6.8) {
+                    goTitle.style.color = '#e74c3c'; goTitle.innerText = "Acidose Crítica!";
+                    goReason.innerText = `O pH despencou para ${ph.toFixed(1)}. Seu corpo não suportou o excesso de H⁺.`;
                 } else {
-                    goTitle.style.color = '#3498db'; goTitle.innerText = "Alcalose e Cálculo!";
-                    goReason.innerText = `O pH explodiu para ${ph.toFixed(1)}. Cristalização mineral e tártaro severo gerados.`;
+                    goTitle.style.color = '#3498db'; goTitle.innerText = "Alcalose Crítica!";
+                    goReason.innerText = `O pH subiu para ${ph.toFixed(1)}. A alcalinidade paralisou as funções vitais.`;
                 }
             }
         }
 
         function updateUI() {
-            ph = Math.max(4.0, Math.min(10.0, ph));
-            phValueEl.innerText = `pH Salivar: ${ph.toFixed(1)}`;
-            let percent = ((ph - 4.5) / (9.5 - 4.5)) * 100;
+            ph = Math.max(6.6, Math.min(8.2, ph));
+            phValueEl.innerText = `pH Sanguíneo: ${ph.toFixed(1)}`;
+            let percent = ((ph - 6.8) / (8.0 - 6.8)) * 100;
             phPointerEl.style.left = `${Math.max(0, Math.min(100, percent))}%`;
 
             let seconds = Math.floor(score / 1000);
@@ -878,10 +878,10 @@
             
             // Reseta para o background do menu
             resize();
-            ph = 7.0;
+            ph = 7.4;
             score = 0;
             isGameOver = false;
-            bufferLocked = 0; carbRush = 0; xerostomiaMode = 0;
+            bufferLocked = 0; exerciseRush = 0; breathMode = 0;
             hasReachedFirstPlaceThisGame = false;
             trophyEl.classList.remove('show');
             drops = []; particles = []; eventTimer = 0; decayTimer = 0;
@@ -893,14 +893,14 @@
         }
 
         function startGame() {
-            resize(); ph = 7.0; score = 0; isGameOver = false;
-            bufferLocked = 0; carbRush = 0; xerostomiaMode = 0;
+            resize(); ph = 7.4; score = 0; isGameOver = false;
+            bufferLocked = 0; exerciseRush = 0; breathMode = 0;
             hasReachedFirstPlaceThisGame = false;
             trophyEl.classList.remove('show');
             drops = []; particles = []; eventTimer = 0; decayTimer = 0;
             player = new Player();
             gameOverScreen.style.display = 'none';
-            alertCarb.style.opacity = '0'; alertXero.style.opacity = '0';
+            alertExercise.style.opacity = '0'; alertBreath.style.opacity = '0';
             updateUI();
             lastTime = performance.now();
             requestAnimationFrame(gameLoop);
@@ -914,31 +914,31 @@
             score += dt;
 
             if (bufferLocked > 0) bufferLocked -= dt;
-            if (carbRush > 0) carbRush -= dt;
-            if (xerostomiaMode > 0) xerostomiaMode -= dt;
+            if (exerciseRush > 0) exerciseRush -= dt;
+            if (breathMode > 0) breathMode -= dt;
 
             eventTimer += dt;
             if (eventTimer > 12000) {
                 eventTimer = 0;
                 if (Math.random() > 0.5) {
-                    carbRush = 5000; alertCarb.style.opacity = '1';
-                    setTimeout(() => alertCarb.style.opacity = '0', 2500);
+                    exerciseRush = 5000; alertExercise.style.opacity = '1';
+                    setTimeout(() => alertExercise.style.opacity = '0', 2500);
                 } else {
-                    xerostomiaMode = 5000; alertXero.style.opacity = '1';
-                    setTimeout(() => alertXero.style.opacity = '0', 2500);
+                    breathMode = 5000; alertBreath.style.opacity = '1';
+                    setTimeout(() => alertBreath.style.opacity = '0', 2500);
                 }
             }
 
             decayTimer += dt;
             if (decayTimer > 800 && bufferLocked <= 0) {
                 decayTimer = 0;
-                ph += Math.random() > 0.5 ? 0.1 : -0.1;
+                ph += Math.random() > 0.5 ? 0.05 : -0.05;
                 updateUI();
                 checkGameOver();
             }
 
             dropSpawnTimer += dt;
-            let currentSpawnRate = carbRush > 0 ? 80 : 350;
+            let currentSpawnRate = exerciseRush > 0 ? 80 : 350;
             currentSpawnRate -= (score / 100);
 
             if (dropSpawnTimer > Math.max(60, currentSpawnRate)) {
