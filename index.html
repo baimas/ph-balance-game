@@ -316,6 +316,37 @@
             box-shadow: inset 0 0 0px rgba(0, 0, 0, 0);
         }
 
+        #first-place-trophy {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 100px;
+            z-index: 50;
+            pointer-events: none;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.6s ease;
+            text-shadow: 0 10px 30px rgba(241, 196, 15, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+        }
+
+        #first-place-trophy.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        #first-place-text {
+            font-size: 24px;
+            font-weight: 900;
+            color: #f1c40f;
+            text-transform: uppercase;
+            -webkit-text-stroke: 1px #d35400;
+            margin-top: 10px;
+            text-shadow: 2px 2px 0 #d35400, -1px -1px 0 #d35400, 1px -1px 0 #d35400, -1px 1px 0 #d35400, 1px 1px 0 #d35400;
+        }
+
         /* Responsividade para Dispositivos Móveis */
         @media (max-width: 768px) {
             #ui {
@@ -425,6 +456,7 @@
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 
 <body>
@@ -459,6 +491,11 @@
     <div id="alert-hub">
         <div id="alert-carb" class="alert-banner">⚠️ ATAQUE ÁCIDO AGRESSIVO (Carboidratos)! ⚠️</div>
         <div id="alert-xero" class="alert-banner">⚠️ XEROSTOMIA: Gravidade Aumentada! ⚠️</div>
+    </div>
+
+    <div id="first-place-trophy">
+        🏆
+        <div id="first-place-text">NOVO RECORDE!</div>
     </div>
 
     <div id="start-screen">
@@ -516,6 +553,7 @@
         const vignette = document.getElementById('vignette');
         const leaderboardEntriesEl = document.getElementById('leaderboard-entries');
         const playerNameInput = document.getElementById('player-name');
+        const trophyEl = document.getElementById('first-place-trophy');
 
         let width, height;
         let ph = 7.0;
@@ -523,6 +561,7 @@
         let isGameOver = false;
         let lastTime = 0;
         let currentPlayerName = "FONO";
+        let hasReachedFirstPlaceThisGame = false;
 
         let bufferLocked = 0;
         let carbRush = 0;
@@ -565,6 +604,33 @@
             { name: "Voz_Saud", score: 12 }
         ];
 
+        function showTrophyAndConfetti() {
+            trophyEl.classList.add('show');
+            
+            if (typeof confetti === 'function') {
+                var duration = 3 * 1000;
+                var animationEnd = Date.now() + duration;
+                var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
+
+                function randomInRange(min, max) {
+                    return Math.random() * (max - min) + min;
+                }
+
+                var interval = setInterval(function() {
+                    var timeLeft = animationEnd - Date.now();
+                    if (timeLeft <= 0) return clearInterval(interval);
+
+                    var particleCount = 50 * (timeLeft / duration);
+                    confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                    confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+                }, 250);
+            }
+
+            setTimeout(() => {
+                trophyEl.classList.remove('show');
+            }, 4000);
+        }
+
         function renderLeaderboard(currentLiveScore = 0, isLive = true) {
             let listToDisplay = [...highScores];
 
@@ -579,6 +645,15 @@
             listToDisplay.sort((a, b) => b.score - a.score);
             // Pega apenas os 10 melhores
             listToDisplay = listToDisplay.slice(0, 10);
+
+            // Confetti logic
+            if (isLive && !hasReachedFirstPlaceThisGame && currentLiveScore > 0) {
+                let previousTopScore = highScores.length > 0 ? Math.max(...highScores.map(s => s.score)) : 0;
+                if (currentLiveScore > previousTopScore) {
+                    hasReachedFirstPlaceThisGame = true;
+                    showTrophyAndConfetti();
+                }
+            }
 
             leaderboardEntriesEl.innerHTML = listToDisplay.map((entry, index) => `
                 <li class="leaderboard-item ${entry.isCurrentSession ? 'active-player' : ''}">
@@ -807,6 +882,8 @@
             score = 0;
             isGameOver = false;
             bufferLocked = 0; carbRush = 0; xerostomiaMode = 0;
+            hasReachedFirstPlaceThisGame = false;
+            trophyEl.classList.remove('show');
             drops = []; particles = []; eventTimer = 0; decayTimer = 0;
             player = new Player();
             
@@ -818,6 +895,8 @@
         function startGame() {
             resize(); ph = 7.0; score = 0; isGameOver = false;
             bufferLocked = 0; carbRush = 0; xerostomiaMode = 0;
+            hasReachedFirstPlaceThisGame = false;
+            trophyEl.classList.remove('show');
             drops = []; particles = []; eventTimer = 0; decayTimer = 0;
             player = new Player();
             gameOverScreen.style.display = 'none';
