@@ -13,6 +13,7 @@
             background-color: #f5f7fa;
             font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             user-select: none;
+            touch-action: none;
         }
 
         canvas {
@@ -314,6 +315,114 @@
             transition: box-shadow 0.2s ease;
             box-shadow: inset 0 0 0px rgba(0, 0, 0, 0);
         }
+
+        /* Responsividade para Dispositivos Móveis */
+        @media (max-width: 768px) {
+            #ui {
+                padding: 10px;
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .panel {
+                padding: 10px 15px;
+            }
+
+            #ph-meter {
+                width: 260px;
+            }
+
+            #ph-value {
+                font-size: 22px;
+            }
+
+            #right-hud {
+                flex-direction: row;
+                align-items: flex-start;
+                justify-content: center;
+                width: 100%;
+                gap: 10px;
+            }
+
+            #score-container {
+                width: auto;
+                flex: 1;
+                max-width: 150px;
+                text-align: center;
+            }
+
+            #score {
+                font-size: 24px;
+            }
+
+            #leaderboard {
+                width: 160px;
+                padding: 10px;
+            }
+
+            #leaderboard h3 {
+                font-size: 11px;
+                margin-bottom: 5px;
+            }
+
+            .leaderboard-item {
+                font-size: 10px;
+                padding: 2px 0;
+            }
+
+            /* Mostra apenas o top 5 no mobile para poupar espaço na tela */
+            .leaderboard-item:nth-child(n+6) {
+                display: none;
+            }
+
+            #alert-hub {
+                top: 170px;
+                width: 90%;
+            }
+
+            .alert-banner {
+                font-size: 12px;
+                padding: 10px 15px;
+                text-align: center;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            h2 {
+                font-size: 16px;
+                margin-bottom: 15px;
+            }
+
+            .edu-box {
+                padding: 15px;
+                border-radius: 12px;
+                margin-bottom: 15px;
+            }
+
+            .edu-box p, .edu-box ul {
+                font-size: 13px !important;
+            }
+
+            .input-group input {
+                width: 150px;
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            button {
+                padding: 12px 30px;
+                font-size: 16px;
+            }
+            
+            .reset-btn {
+                font-size: 9px;
+                padding: 6px;
+                margin-top: 10px;
+            }
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800;900&display=swap" rel="stylesheet">
 </head>
@@ -431,10 +540,13 @@
         let mouseY = window.innerHeight / 2;
 
         window.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
-        window.addEventListener('touchmove', (e) => {
+        
+        function handleTouch(e) {
             mouseX = e.touches[0].clientX;
             mouseY = e.touches[0].clientY;
-        }, { passive: true });
+        }
+        window.addEventListener('touchmove', handleTouch, { passive: true });
+        window.addEventListener('touchstart', handleTouch, { passive: true });
 
         function resize() {
             width = window.innerWidth;
